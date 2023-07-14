@@ -71,7 +71,7 @@ const predictDataset = (classifier, samples, y_test) => {
 };
 
 const main = () => {
-  const dataset = loadJSON("VOf1Dc_nxCA.json");
+  const dataset = loadJSON("SzKnKC5BvDw.json");
   const training = dataset.training;
   const testing = dataset.testing;
 
@@ -94,7 +94,6 @@ const main = () => {
   const X_test = preprocessComments(testing.comments);
   const y_test = testing.classes;
 
-  /*
   const y_pred = classifier.predict(X_test);
 
   //calculating accuracy
@@ -105,11 +104,12 @@ const main = () => {
   predictDataset(classifier, testing.comments, y_test);
 
   classifier.save("outputs/model.json");
-  */
+
+  /*
   const ss = classifier.predict(
     preprocessComments(["Ese es su contacto de WhatsApp 👆👆"])
-  );
-  console.log("debug:", ss);
+  );*/
+
   return true;
 };
 
