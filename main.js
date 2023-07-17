@@ -29,7 +29,7 @@ const saveJSON = (filename, data) => {
   }
 };
 
-function calculateAccuracy(array1, array2) {
+const calculateAccuracy = (array1, array2) => {
   if (array1.length !== array2.length) {
     throw new Error("The arrays must have the same length");
   }
@@ -43,9 +43,32 @@ function calculateAccuracy(array1, array2) {
 
   const accuracy = counter / array1.length;
   return accuracy;
-}
+};
 
-const predictDataset = (classifier, samples, y_test) => {
+const calculateConfussionMatrix = (y_pred, y_test) => {
+  let TP = 0;
+  let FN = 0;
+  let FP = 0;
+  let TN = 0;
+
+  if (y_pred.length !== y_test.length) {
+    throw new Error("The arrays must have the same length");
+  }
+
+  for (let i = 0; i < y_test.length; i++) {
+    if (y_test[i] == 1) {
+      if (y_pred[i] == 1) TP++;
+      else FN++;
+    } else {
+      if (y_pred[i] == 1) FP++;
+      else TN++;
+    }
+  }
+
+  return { TP, FN, FP, TN };
+};
+
+const predictDataset = (classifier, samples, y_test, wrong_only = false) => {
   const tokens = preprocessComments(samples);
   const y_pred = classifier.predict(tokens);
 
@@ -58,7 +81,14 @@ const predictDataset = (classifier, samples, y_test) => {
       res["tokens"] = tokens[i];
       res["real"] = y_test[i];
       res["pred"] = y_pred[i];
-      result.push(res);
+
+      if (wrong_only) {
+        if (res["real"] != res["pred"]) {
+          result.push(res);
+        }
+      } else {
+        result.push(res);
+      }
     } else if (y_pred[i] == 1) {
       const res = {};
       res["comment"] = samples[i];
@@ -71,9 +101,9 @@ const predictDataset = (classifier, samples, y_test) => {
 };
 
 const main = () => {
-  const dataset = loadJSON("SzKnKC5BvDw.json");
-  const training = dataset.training;
-  const testing = dataset.testing;
+  let dataset = loadJSON("dataset.json");
+  let training = dataset.training;
+  let testing = dataset.testing;
 
   console.log(
     "Num. class 0 samples (training): ",
@@ -84,12 +114,18 @@ const main = () => {
     training.classes.filter((valor) => valor == 1).length
   );
 
+  // ======= TRAINING =======
+
   const X_train = preprocessComments(training.comments);
   const y_train = training.classes;
 
   const classifier = new MultinomialNB();
 
   classifier.fit(X_train, y_train);
+
+  // ======= TESTING =======
+  dataset = loadJSON("TYfQZA4ZaXs.json");
+  testing = dataset.all;
 
   const X_test = preprocessComments(testing.comments);
   const y_test = testing.classes;
@@ -98,17 +134,19 @@ const main = () => {
 
   //calculating accuracy
   const accuracy = calculateAccuracy(y_pred, y_test);
-
   console.log("Accuracy:", accuracy);
 
-  predictDataset(classifier, testing.comments, y_test);
+  //calculating confussion matrix
+  const confussion_matrix = calculateConfussionMatrix(y_pred, y_test);
+  console.log("Confussion Matrix:");
+  console.log("-> TP:", confussion_matrix.TP);
+  console.log("-> FN:", confussion_matrix.FN);
+  console.log("-> FP (*):", confussion_matrix.FP);
+  console.log("-> TN:", confussion_matrix.TN);
+
+  predictDataset(classifier, testing.comments, y_test, (wrong_only = true));
 
   classifier.save("outputs/model.json");
-
-  /*
-  const ss = classifier.predict(
-    preprocessComments(["Ese es su contacto de WhatsApp 👆👆"])
-  );*/
 
   return true;
 };

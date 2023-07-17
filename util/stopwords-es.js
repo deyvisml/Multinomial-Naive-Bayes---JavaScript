@@ -100,6 +100,14 @@ const stopwords = [
   "perfecto",
   "ellos",
   "encontrar",
+  "duda",
+  "son",
+  "si",
+  "esta",
+  "fue",
+  "estuvo",
+  "haber",
+  "hola",
 ];
 
 module.exports = stopwords;

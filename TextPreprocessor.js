@@ -15,6 +15,10 @@ class TextPreprocessor {
     // remove <br> strings
     cleaned_text = cleaned_text.replace(/<br>/g, "");
 
+    // remove </b> strings
+    cleaned_text = cleaned_text.replace(/<b>/g, "");
+    cleaned_text = cleaned_text.replace(/<\/b>/g, "");
+
     // remove &quot;
     cleaned_text = cleaned_text.replace(/&quot;/g, "");
 
@@ -25,7 +29,7 @@ class TextPreprocessor {
     cleaned_text = cleaned_text.replace(/(?:https?|ftp):\/\/[\n\S]+/g, "");
 
     // remove punctuations signs
-    cleaned_text = cleaned_text.replace(/[/&;^,.'¡!¿?#’]/g, "");
+    cleaned_text = cleaned_text.replace(/[/*&;^,.'\-¡!¿?#’]/g, "");
 
     // remove numbers
     cleaned_text = cleaned_text.replace(/[0-9]/g, "");
