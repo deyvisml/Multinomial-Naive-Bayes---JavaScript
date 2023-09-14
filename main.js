@@ -68,31 +68,44 @@ const calculateConfussionMatrix = (y_pred, y_test) => {
   return { TP, FN, FP, TN };
 };
 
-const predictDataset = (classifier, samples, y_test, wrong_only = false) => {
-  const tokens = preprocessComments(samples);
+/**
+ * Allows to test and evaluated a dataset through a multnomial nb model
+ * @param {function} classifier Allows make clasifications
+ * @param {array} comments Dataset to test the model
+ * @param {array} classes Real classes of the samples
+ * @param {bool} wrong_only To only save when the model makes a wrong prediction
+ * @param {string} real_class When wrong only is true, then you could want not all the wrong prections, e.g. only get the wrong result when the real class was spam (1)
+ */
+const predictDataset = (
+  classifier,
+  comments,
+  classes,
+  wrong_only = false,
+  real_class = undefined
+) => {
+  const tokens = preprocessComments(comments);
   const y_pred = classifier.predict(tokens);
 
   const result = [];
 
-  for (let i = 0; i < samples.length; i++) {
-    if (y_test) {
-      const res = {};
-      res["comment"] = samples[i];
-      res["tokens"] = tokens[i];
-      res["real"] = y_test[i];
-      res["pred"] = y_pred[i];
+  for (let i = 0; i < comments.length; i++) {
+    const res = {};
+    res["comment"] = comments[i];
+    res["tokens"] = tokens[i];
+    res["real"] = classes[i];
+    res["pred"] = y_pred[i];
 
-      if (wrong_only) {
-        if (res["real"] != res["pred"]) {
+    if (wrong_only) {
+      if (res["real"] != res["pred"]) {
+        if (real_class) {
+          if (res["real"] == real_class) {
+            result.push(res);
+          }
+        } else {
           result.push(res);
         }
-      } else {
-        result.push(res);
       }
-    } else if (y_pred[i] == 1) {
-      const res = {};
-      res["comment"] = samples[i];
-      res["pred"] = y_pred[i];
+    } else {
       result.push(res);
     }
   }
@@ -100,10 +113,77 @@ const predictDataset = (classifier, samples, y_test, wrong_only = false) => {
   saveJSON("pred_samples.json", { result: result });
 };
 
+// Main to generate a model that will be use in the web extension
 const main = () => {
-  let dataset = loadJSON("dataset.json");
-  let training = dataset.training;
-  let testing = dataset.testing;
+  let dataset = loadJSON("dataset_no_duplicates.json");
+  let { training, testing } = dataset;
+
+  console.log(
+    "Num Spam samples (training 80%)\t:",
+    training.y.filter((valor) => valor == 1).length
+  );
+  console.log(
+    "Num Ham samples (training 80%)\t:",
+    training.y.filter((valor) => valor == 0).length
+  );
+
+  // ======= TRAINING =======
+
+  const X = preprocessComments(training.x);
+  const y = training.y;
+
+  const classifier = new MultinomialNB();
+
+  classifier.fit(X, y);
+
+  // ======= TESTING =======
+
+  // test for a simple sample
+  /*
+  const sample =
+    "	Bonito e informativo vídeo. centrémonos siempre en cómo ganar, solía ver el comercio de criptomonedas como algo secundario, pero resultó ser una fuente importante de ingresos pasivos desde que conocí al Sr. Harry Martins, su experiencia en el mercado de criptomonedas es insuperable";
+  classifier.predict(preprocessComments([sample]));
+  return;*/
+
+  const X_test = preprocessComments(testing.x);
+  const y_test = testing.y;
+
+  const y_pred = classifier.predict(X_test);
+
+  // calculating accuracy
+  const accuracy = calculateAccuracy(y_pred, y_test);
+  console.log("Accuracy:", accuracy);
+
+  // calculating confussion matrix
+  const { TP, FN, FP, TN } = calculateConfussionMatrix(y_pred, y_test);
+  console.log("Confussion Matrix:");
+  console.log("-> TP:", TP);
+  console.log("-> FN:", FN);
+  console.log("-> FP (*):", FP);
+  console.log("-> TN:", TN);
+
+  let EVALUATE_DATA = false;
+  if (EVALUATE_DATA) {
+    predictDataset(
+      classifier,
+      testing.x,
+      testing.y,
+      (wrong_only = true),
+      (real_class = "1")
+    );
+  }
+
+  classifier.save("outputs/model.json");
+
+  return true;
+};
+
+/*
+// Main for training and testing
+const main = () => {
+  let dataset = loadJSON("dataset3.json");
+
+  let { training, testing } = dataset;
 
   console.log(
     "Num. class 0 samples (training): ",
@@ -124,8 +204,12 @@ const main = () => {
   classifier.fit(X_train, y_train);
 
   // ======= TESTING =======
-  dataset = loadJSON("TYfQZA4ZaXs.json");
-  testing = dataset.all;
+
+  //dataset = loadJSON("05_2ibqfxEAESo.json");
+  //testing = training;
+
+  // test for a simple sample
+ 
 
   const X_test = preprocessComments(testing.comments);
   const y_test = testing.classes;
@@ -137,18 +221,24 @@ const main = () => {
   console.log("Accuracy:", accuracy);
 
   //calculating confussion matrix
-  const confussion_matrix = calculateConfussionMatrix(y_pred, y_test);
+  const { TP, FN, FP, TN } = calculateConfussionMatrix(y_pred, y_test);
   console.log("Confussion Matrix:");
-  console.log("-> TP:", confussion_matrix.TP);
-  console.log("-> FN:", confussion_matrix.FN);
-  console.log("-> FP (*):", confussion_matrix.FP);
-  console.log("-> TN:", confussion_matrix.TN);
+  console.log("-> TP:", TP);
+  console.log("-> FN:", FN);
+  console.log("-> FP (*):", FP);
+  console.log("-> TN:", TN);
 
-  predictDataset(classifier, testing.comments, y_test, (wrong_only = true));
+  predictDataset(
+    classifier,
+    testing.comments,
+    testing.classes,
+    (wrong_only = true),
+    (real_class = "1")
+  );
 
   classifier.save("outputs/model.json");
 
   return true;
-};
+};*/
 
 main();

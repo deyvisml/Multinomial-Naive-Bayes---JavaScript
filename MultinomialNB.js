@@ -76,27 +76,39 @@ class MultinomialNB {
       const scores = {};
 
       for (const class_name of this.class_names) {
-        scores[class_name] = 0; // this.log_prior[class_name]; // log prior is generating incorrect clasification, so it appear that i need a a uniform distribution of data 50%, 50%
+        scores[class_name] = 0; //this.log_prior[class_name]; // log prior is generating incorrect clasification, so it appear that i need a a uniform distribution of data 50%, 50%
 
         for (const word of x) {
           if (this.vocabulary.includes(word)) {
             scores[class_name] += this.log_likelihood[word][class_name];
+            /*
+            console.log(
+              "class, word, likelihood =>",
+              class_name,
+              word,
+              "\t",
+              this.log_likelihood[word][class_name]
+            );*/
           }
         }
       }
       //console.log("scores -> ", scores);
-
       /*
+      console.log(
+        "scores -> ",
+        scores,
+        scores["1"] - scores["0"],
+        scores["1"] - scores["0"] > -1.704
+      );*/
+
       const max_probability = Math.max(...Object.values(scores));
       pred = Object.keys(scores).find((key) => scores[key] === max_probability);
-      */
 
       // modifying: reduce false positive rate
-      let threshold = 1.8; // (umbral) 1 is default, but a good value is around 1.4 (and 1.8 for testing with TYfQZA4ZaXs)
-      pred = "0";
-      if (scores["1"] / scores["0"] > threshold) {
-        pred = "1";
-      }
+
+      let threshold = 1.2; // good value: 1.45 (umbral) 1 is default, but a good value is around 1.4 (and 1.8 for testing with TYfQZA4ZaXs)
+      // la segunda parte de la condicional es agregada para lidiar con comentarios largos (varias palabras)
+      pred = scores["1"] / scores["0"] >= threshold ? "1" : "0";
 
       preds.push(pred);
     }
