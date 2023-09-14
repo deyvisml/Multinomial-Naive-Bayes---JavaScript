@@ -104,9 +104,9 @@ class MultinomialNB {
       const max_probability = Math.max(...Object.values(scores));
       pred = Object.keys(scores).find((key) => scores[key] === max_probability);
 
-      // modifying: reduce false positive rate
+      // modifying: to reduce false positive rate
 
-      let threshold = 1.2; // good value: 1.45 (umbral) 1 is default, but a good value is around 1.4 (and 1.8 for testing with TYfQZA4ZaXs)
+      let threshold = 1.2; // good value: 1.2 (umbral) 1 is default, but a good value is around 1.4 (and 1.8 for testing with TYfQZA4ZaXs)
       // la segunda parte de la condicional es agregada para lidiar con comentarios largos (varias palabras)
       pred = scores["1"] / scores["0"] >= threshold ? "1" : "0";
 

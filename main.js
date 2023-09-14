@@ -2,6 +2,11 @@ const fs = require("fs");
 const MultinomialNB = require("./MultinomialNB");
 const text_preprocessor = require("./TextPreprocessor");
 
+/**
+ * Allows you to preprocesses an array of comments, cleninng, stopwords removing, stemming, etc
+ * @param {array} comments Array of comments
+ * @returns An array with the comments preprocessed (tokens)
+ */
 const preprocessComments = (comments) => {
   const preprocessed_comments = [];
   for (const comment of comments) {
@@ -11,6 +16,11 @@ const preprocessComments = (comments) => {
   return preprocessed_comments;
 };
 
+/**
+ * Allows you to load a json file into a js variable (object)
+ * @param {string} filename Name of the json file
+ * @returns An object with the data of the json file
+ */
 const loadJSON = (filename) => {
   let dataset = fs.readFileSync("./datasets/" + filename, "utf-8");
   dataset = JSON.parse(dataset);
@@ -18,6 +28,11 @@ const loadJSON = (filename) => {
   return dataset;
 };
 
+/**
+ * Allows you to save a json (js object) into a .json file
+ * @param {string} filename Name of the json file
+ * @param {object} data The data to save into the json file
+ */
 const saveJSON = (filename, data) => {
   const json_data = JSON.stringify(data);
 
@@ -29,22 +44,29 @@ const saveJSON = (filename, data) => {
   }
 };
 
-const calculateAccuracy = (array1, array2) => {
-  if (array1.length !== array2.length) {
+/**
+ * Allows you to get the evaluate the result of the model
+ * @param {array} y_pred Predictions make by the model
+ * @param {array} y_test Real classes
+ * @returns The accuracy performance
+ */
+const calculateAccuracy = (y_pred, y_test) => {
+  if (y_pred.length !== y_test.length) {
     throw new Error("The arrays must have the same length");
   }
 
-  let counter = 0;
-  for (let i = 0; i < array1.length; i++) {
-    if (array1[i] == array2[i]) {
-      counter++;
-    }
-  }
+  const { TP, FN, FP, TN } = calculateConfussionMatrix(y_pred, y_test);
+  const accuracy = (TP + TN) / (TP + FN + FP + TN);
 
-  const accuracy = counter / array1.length;
   return accuracy;
 };
 
+/**
+ * Allows you to get the values of the confussion matrix
+ * @param {array} y_pred Predictions made by the model
+ * @param {array} y_test Real classes
+ * @returns The values of the confussion matrix
+ */
 const calculateConfussionMatrix = (y_pred, y_test) => {
   let TP = 0;
   let FN = 0;
@@ -138,12 +160,13 @@ const main = () => {
 
   // ======= TESTING =======
 
-  // test for a simple sample
   /*
+  // test for a simple sample
   const sample =
     "	Bonito e informativo vídeo. centrémonos siempre en cómo ganar, solía ver el comercio de criptomonedas como algo secundario, pero resultó ser una fuente importante de ingresos pasivos desde que conocí al Sr. Harry Martins, su experiencia en el mercado de criptomonedas es insuperable";
   classifier.predict(preprocessComments([sample]));
-  return;*/
+  return;
+  */
 
   const X_test = preprocessComments(testing.x);
   const y_test = testing.y;
@@ -177,68 +200,5 @@ const main = () => {
 
   return true;
 };
-
-/*
-// Main for training and testing
-const main = () => {
-  let dataset = loadJSON("dataset3.json");
-
-  let { training, testing } = dataset;
-
-  console.log(
-    "Num. class 0 samples (training): ",
-    training.classes.filter((valor) => valor == 0).length
-  );
-  console.log(
-    "Num. class 1 samples (training): ",
-    training.classes.filter((valor) => valor == 1).length
-  );
-
-  // ======= TRAINING =======
-
-  const X_train = preprocessComments(training.comments);
-  const y_train = training.classes;
-
-  const classifier = new MultinomialNB();
-
-  classifier.fit(X_train, y_train);
-
-  // ======= TESTING =======
-
-  //dataset = loadJSON("05_2ibqfxEAESo.json");
-  //testing = training;
-
-  // test for a simple sample
- 
-
-  const X_test = preprocessComments(testing.comments);
-  const y_test = testing.classes;
-
-  const y_pred = classifier.predict(X_test);
-
-  //calculating accuracy
-  const accuracy = calculateAccuracy(y_pred, y_test);
-  console.log("Accuracy:", accuracy);
-
-  //calculating confussion matrix
-  const { TP, FN, FP, TN } = calculateConfussionMatrix(y_pred, y_test);
-  console.log("Confussion Matrix:");
-  console.log("-> TP:", TP);
-  console.log("-> FN:", FN);
-  console.log("-> FP (*):", FP);
-  console.log("-> TN:", TN);
-
-  predictDataset(
-    classifier,
-    testing.comments,
-    testing.classes,
-    (wrong_only = true),
-    (real_class = "1")
-  );
-
-  classifier.save("outputs/model.json");
-
-  return true;
-};*/
 
 main();

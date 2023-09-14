@@ -1,12 +1,6 @@
-// a list of commonly used stopwords that have little meaning and can be excluded
-// from analysis.
-const stopwords = [
+const stopwords_basico = [
   "a",
   "un",
-  /*
-  "el",
-  "él",
-  "ella",*/
   "y",
   "sobre",
   "de",
@@ -73,7 +67,6 @@ const stopwords = [
   "9",
   "0",
   "_",
-
   "a",
   "b",
   "c",
@@ -101,56 +94,9 @@ const stopwords = [
   "x",
   "y",
   "z",
+];
 
-  /*
-  "es",
-  "tres",
-  "tan",
-  "solo",
-  "tener",
-  "amigos",
-  "tus",
-  "mucho",
-  "tomo",
-  "buen",
-  "esto",
-  "ah",
-  "tiempo",
-  "este",
-  "negocio",
-  "hoy",
-  "dias",
-  "trabajo",
-  "comer",
-  "estoy",
-  "pues",
-  "bien",
-  "perfecto",
-  "ellos",
-  "duda",
-  "son",
-  "si",
-  "esta",
-  "está",
-  "fue",
-  "estuvo",
-  "haber",
-  "hola",
-  "$",
-  "%",
-  "primero",
-  "méxico",
-  "youtube",
-  "suiza",
-  "europa",
-  "eleonora",
-  "bélgica",
-  "mamá",
-  "francia",
-  "merci",
-  "posible",
-  "ahi",*/
-
+const stopwords_nombres_propios = [
   "patricia",
   "flores",
   "nellie",
@@ -369,7 +315,9 @@ const stopwords = [
   "louise",
   "sanchez",
   "rebeccahernmayer",
+];
 
+const stopwords_generado = [
   "criptomonedas",
   "lo",
   "vez",
@@ -569,6 +517,13 @@ const stopwords = [
   "grandes",
   "hola",
   "cual",
+];
+
+// Joining the stopwords lists in a single array
+const stopwords = [
+  ...stopwords_basico,
+  ...stopwords_nombres_propios,
+  ...stopwords_generado,
 ];
 
 module.exports = stopwords;
