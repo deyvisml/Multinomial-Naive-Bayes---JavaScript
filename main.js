@@ -137,8 +137,9 @@ const predictDataset = (
 
 // Main to generate a model that will be use in the web extension
 const main = () => {
-  let dataset = loadJSON("dataset_no_duplicates.json");
-  let { training, testing } = dataset;
+  let dataset = loadJSON("dataset.json");
+  let { all, training, testing } = dataset;
+  //testing = all;
 
   console.log(
     "Num Spam samples (training 80%)\t:",
@@ -192,7 +193,7 @@ const main = () => {
       testing.x,
       testing.y,
       (wrong_only = true),
-      (real_class = "1")
+      (real_class = "0")
     );
   }
 
